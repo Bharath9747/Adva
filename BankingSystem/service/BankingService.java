@@ -10,13 +10,13 @@ import java.util.List;
 public class BankingService {
     BankingServiceImpl bankingService = new BankingServiceImpl();
     public void withdrawFund(int accountNoWithdraw, BigDecimal withdraw) {
-        bankingService.withdrawFund(accountNoWithdraw,withdraw);
+        bankingService.withdrawFund(accountNoWithdraw,withdraw,"Withdraw Amount "+withdraw);
     }
     public BigDecimal getBalance(int accountNo){
         return bankingService.getBalance(accountNo);
     }
     public void depositFund(int accountNoDeposit,BigDecimal deposit) {
-        bankingService.depositFund(accountNoDeposit,deposit);
+        bankingService.depositFund(accountNoDeposit,deposit,"Deposited Amount "+deposit);
     }
 
     public void createAccount(Account account){

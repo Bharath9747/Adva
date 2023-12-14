@@ -5,9 +5,7 @@ import BankingSystem.model.Transaction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -16,7 +14,8 @@ import static BankingSystem.repository.BankRepo.transactionList;
 
 public class BankingServiceImpl{
     AtomicInteger transactionId = new AtomicInteger(1);
-    public void withdrawFund(int accountNoWithdraw,BigDecimal withdraw) {
+    public static HashMap<Integer,List<BigDecimal>> interestHashMap = new HashMap<>();
+    public void withdrawFund(int accountNoWithdraw,BigDecimal withdraw,String comment) {
         Account acountFound1 = accountHashMap.values().stream().filter(e->e.getAccountInfo().getNo()==accountNoWithdraw).findFirst().orElse(null);
         if(acountFound1.equals(null))
             System.out.println("Account Not Found");
@@ -24,8 +23,7 @@ public class BankingServiceImpl{
             BigDecimal afterWithdraw =acountFound1.getBalance().subtract(withdraw);
             if(afterWithdraw.compareTo(BigDecimal.ZERO)>0) {
                 acountFound1.setBalance(afterWithdraw);
-                addTransaction(new Transaction(transactionId.getAndIncrement(),accountNoWithdraw,withdraw, LocalDate.now(),1,afterWithdraw,"Withdraw Amount "+withdraw));
-                System.out.println("Withdraw Done");
+                addTransaction(new Transaction(transactionId.getAndIncrement(),accountNoWithdraw,withdraw, LocalDate.now(),1,afterWithdraw,comment));
             }
             else
             {
@@ -41,15 +39,14 @@ public class BankingServiceImpl{
         return accountHashMap.values().stream().filter(e->e.getAccountInfo().getNo()==accountNo).findFirst().get().getBalance();
     }
 
-    public void depositFund(int accountNoDeposit, BigDecimal deposit) {
+    public void depositFund(int accountNoDeposit, BigDecimal deposit,String comment) {
         Account acountFound = accountHashMap.values().stream().filter(e->e.getAccountInfo().getNo()==accountNoDeposit).findFirst().orElse(null);
         if(acountFound.equals(null))
             System.out.println("Account Not Found");
         else {
             acountFound.setBalance(acountFound.getBalance().add(deposit));
             accountHashMap.put(accountNoDeposit, acountFound);
-            addTransaction(new Transaction(transactionId.getAndIncrement(),accountNoDeposit,deposit, LocalDate.now(),1,acountFound.getBalance(),"Deposited Amount "+deposit));
-            System.out.println("Deposit Done");
+            addTransaction(new Transaction(transactionId.getAndIncrement(),accountNoDeposit,deposit, LocalDate.now(),1,acountFound.getBalance(),comment));
         }
 
     }
@@ -84,26 +81,27 @@ public class BankingServiceImpl{
 
     public void calculateInterest() {
         if(!accountHashMap.isEmpty()) {
-            /*accountHashMap.forEach(((integer, account) ->
-            {
-                LocalDate date = account.getAccountInfo().getDateOfOpening();
-                LocalDate date1 = date.plusDays(30);
-                LocalDate dateNow = LocalDate.now();
-                while (date1.compareTo(dateNow)<0) {
-                    System.out.println(date1);
-                    date1 = date1.plusDays(30);
+            List<Account> zeroAccountList = getAllNonZeroBalanceAccount();
+
+            zeroAccountList.stream().forEach(x-> addInterestAccount(x.getAccountInfo().getNo(),x.getBalance()));
+            interestHashMap.forEach((accountno,list)->{
+                if(list.size()==5)
+                {
+                    depositFund(accountno,list.stream().reduce(BigDecimal.ZERO,BigDecimal::add),"Interest Deposited");
+                    System.out.println();System.out.println("Interest added for "+accountno);
+                    System.out.println();
                 }
-            }));*/
-            System.out.println();
-            accountHashMap.values().stream().filter(account -> account.getBalance().compareTo(BigDecimal.ZERO)!=0)
-                    .map(account -> {account.setBalance(account.getBalance().add(account.getBalance().multiply(BigDecimal.valueOf(0.06))));
-                    return account;}).forEach(System.out::println);
-            System.out.println();
-            System.out.println("Calculating Interest Updated");
-            System.out.println();
+            });
         }
     }
 
+    private static List<Account> getAllNonZeroBalanceAccount() {
+        return accountHashMap.values().stream().filter(c->c.getBalance().compareTo(new BigDecimal(0))!=0).collect(Collectors.toList());
+    }
+
+    private static void addInterestAccount( int no, BigDecimal balance) {
+        interestHashMap.computeIfAbsent(no,k->new ArrayList<>()).add(balance.multiply(BigDecimal.valueOf(0.06)));
+    }
 
 
 }

@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static BankingSystem.repository.BankRepo.accountHashMap;
 import static BankingSystem.repository.BankRepo.transactionList;
+import static BankingSystem.service.impl.BankingServiceImpl.interestHashMap;
 
 public class MainRunner extends TimerTask{
 //
@@ -40,7 +41,7 @@ public class MainRunner extends TimerTask{
             public void run() {
                 bankingService.calculateInterest();
             }
-        }, 10, 20, TimeUnit.SECONDS);
+        }, 10, 10, TimeUnit.SECONDS);
         try{
             BufferedReader reader = new BufferedReader(new FileReader("input.txt"));
             String s;
@@ -96,16 +97,23 @@ public class MainRunner extends TimerTask{
                 case 6 :
                     bankingService.getAllNonKYCAccount().forEach(System.out::println);
                     break;
+                case 7 :
+                    System.out.println();
+                    System.out.println("Bank Accounts After Process");
+                    accountHashMap.values().forEach(System.out::println);
+                    System.out.println();
+                    break;
+                case 8 :
+                    System.out.println();
+                    System.out.println("Transaction History For all Process");
+                    transactionList.forEach(System.out::println);
+                    System.out.println();
+                    break;
                 default: scheduledExecutorService.shutdown();
                         System.exit(0);
             }
-            System.out.println();
-            System.out.println("Bank Accounts After Process");
-            accountHashMap.values().forEach(System.out::println);
-            System.out.println();
-            System.out.println("Transaction History For all Process");
-            transactionList.forEach(System.out::println);
-            System.out.println();
+
+
         }
     }
 
