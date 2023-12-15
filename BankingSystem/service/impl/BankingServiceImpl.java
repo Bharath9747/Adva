@@ -81,9 +81,9 @@ public class BankingServiceImpl{
 
     public void calculateInterest() {
         if(!accountHashMap.isEmpty()) {
-            List<Account> zeroAccountList = getAllNonZeroBalanceAccount();
+            List<Account> nonZeroAccountList = getAllNonZeroBalanceAccount();
 
-            zeroAccountList.stream().forEach(x-> addInterestAccount(x.getAccountInfo().getNo(),x.getBalance()));
+            nonZeroAccountList.stream().forEach(x-> addInterestAccount(x.getAccountInfo().getNo(),x.getBalance()));
             interestHashMap.forEach((accountno,list)->{
                 if(list.size()==5)
                 {
